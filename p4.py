@@ -11,6 +11,7 @@ from sklearn.metrics import average_precision_score
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import ConfusionMatrixDisplay
 
 
 def graphs(y_pred, y_test):
@@ -65,7 +66,7 @@ Y_pred = gnb.fit(X_train, Y_train).predict(X_test)
 y_pred = label_binarize(Y_pred, classes=[0, 1, 2])
 y_test = label_binarize(Y_test, classes=[0, 1, 2])
 
-print(confusion_matrix(Y_test, Y_pred))
+ConfusionMatrixDisplay.from_predictions(Y_test, Y_pred)
 
 # ROC and precision-recall code adapted from:
 # https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html
@@ -77,7 +78,7 @@ clf.fit(X_train, Y_train)
 
 Y_pred = clf.predict(X_test)
 
-print(confusion_matrix(Y_test, Y_pred))
+ConfusionMatrixDisplay.from_predictions(Y_test, Y_pred)
 
 y_pred = label_binarize(Y_pred, classes=[0, 1, 2])
 y_test = label_binarize(Y_test, classes=[0, 1, 2])
@@ -90,7 +91,7 @@ logreg.fit(X_train, Y_train)
 
 Y_pred = logreg.predict(X_test)
 
-print(confusion_matrix(Y_test, Y_pred))
+ConfusionMatrixDisplay.from_predictions(Y_test, Y_pred)
 
 y_pred = label_binarize(Y_pred, classes=[0, 1, 2])
 y_test = label_binarize(Y_test, classes=[0, 1, 2])
