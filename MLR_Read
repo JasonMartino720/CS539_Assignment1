@@ -1,0 +1,64 @@
+OS: Ubuntu 20.04
+PL: Python3.8
+
+Source Code: Logistic Regression module from sklearn Python Library
+
+To Run: 
+	*Download Data from to your Python directory: https://www.python-course.eu/neural_network_mnist.php
+	*Open your Python IDE
+	*run following pip commands:
+		-pip install numpy
+		-pip install sklearn.model_selection
+		-pip install sklearn.linear_model
+	*Download MLR.py file to your Python directory
+	*Run MLR.py
+
+
+#What is MLR:
+	In order to understand Multinomial Logistic Regression, we must first recall that logistic regression simply provides a prediction whether something is true or false based on given data: a simple 0 or 1, true or false. Of course, logistic regression actually computes the probability of an outcome but paired with an activation function we get the binary property of our prediction. This makes logistic regression great for binary classification (only 2 classes). MLR expands this copncept where we can theoretically put many binary logistic classifiers in parallel to predict multiple classes. In this case, a separate logistic regression model is fitted to each class and then the model that returns the highest score for the test instance is the prediction for that instance.
+
+
+#Overall Process and Corresponding Functions
+STEP 1: Load data 
+	*Download Data from to your Python directory: https://www.python-course.eu/neural_network_mnist.php
+	*This format (unlike the mnistALL.mat file) comes ready in the form of 784XN where N is the total number of either training or testing samples
+	*FLANN datasets are ROW MAJOR which means that each row represents each instance that we are trying to match
+	*Isolate first 10K training samples and first 1K testing samples
+
+
+STEP 2: Call LogisticRegression() function:
+	*Relevant parameters:
+		-solver: this is the optimizer selection ranging from basic Newtonian to stochastic avg. gradient
+		-max_iter: maximum number of optimization iterations (steps to minimum)
+		-penalty: specifies the norm of the penalty to be used. l2 penalty is default and works with most available solvers
+	*Relevant methods:
+		-fit(train_data, train_labels) where train_data is the entire training dataset without the first column and train_labels is the first column comprising of the sample labels. This method fits the logistic regression models based on the provided training data and corresponding labels.
+		-predict(test_data) where test_data is the entire test dataset without the first column. This method returns a list of predicted classes/digits
+	
+STEP 3: Generate result/response for given test instance(s)
+	*Unlike with KNN and FLANN, Logistic regression returns the predictions directly and not a list of nearest neighbors. We can use this list directly to compute accuracy as in the next step.
+	
+STEP 4: Compute Accuracy (# of correct predictions/# of total predictions)
+	*Step 3 leaves us with a 1K X 1 list of predicted labels (digits from 0 to 9) of the first 1K test images
+	*Remember, these are not necessarily the correct labels so we go back to the testing labels list (ytest) and find out how many times our prediction did not match the correct test label
+	*We achieve this by using the numpy.sum(pred == test_labels) to find the total number of times/hits where the ith entry of ypred is equivalent to the ith entry of test_labels
+	*The total number of wrong predictions divided by the total number of predicitions is the Error Rate
+	*The total number of correct predcitions divided by the total number of predictions is the Model Accuracy
+
+
+#Results:
+	*LBFGS solver, 100 iterations;
+		Error Rate: 14.79%
+		Total Time: 2.53 seconds
+	*LBFGS solver, 150 iterations;
+		Error Rate: 14.70%
+		Total Time: 3.29 seconds
+Note the unfair tradeoff between runtime and error rate decline. We therefore move to try different solvers.
+	*LIBLINEAR solver;
+		Error Rate: 15.0%
+		Total Time: 202.93 seconds
+	*SAGA Solver;
+		Error Rate: 12.30%
+		Total Time: 25.9 seconds
+		
+Comparing MLR to KNN we see that we get a slightly improved accuracy but at the sacrifice of significantly more runtime. 

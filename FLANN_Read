@@ -1,0 +1,65 @@
+OS: Ubuntu 20.04
+PL: Python3.8
+
+Note the reversion to Python from MatLab given that the CMAKE compiler could not find the Matlab or Octave interpreter during the build and install of FLANN. By installing the pyflann library, all FLANN functionality is automatically imported so long as you write your script in python.
+
+Source Code: pyflann python Library
+
+To Run: 
+	*Download Data from to your Python directory: https://www.python-course.eu/neural_network_mnist.php
+	*Open your Python IDE
+	*run following pip commands:
+		-pip install pyflann-py3
+		-pip install numpy
+		-pip install scipy
+	*Download FLANN.py file to your Python directory
+	*Run FLANN.py
+
+
+#What is FLANN:
+	A library performing Fast and Approximate nearest neighbor searches by allowing the user to define a threshold for the approximation. The FLANN library allows us to assign weights to certain aspects of the search such as the index build time, memory useage, target percision, and sample fraction all of which can be tweaked to make the search either faster (less accurate) or More percise (slower), the usual trade off. FLANN also allows for a selection of the algorithm for building our index of nearest neighbors. For this script, we chose the kmeans clustering algorithm so we can control the depth and accuracy of our search given the user defined branching and number of iterations. FLANN is a far more capable classification algorithm than KNN so much so that is has been used for pattern recognition in images of objects bearing more complexity than the MNIST digits. For that reason we expect far better accuracy results that the 16.20% error rate from KNN on the same exact training samples and test instances.
+
+
+#Overall Process and Corresponding Functions
+STEP 1: Load data 
+	*Download Data from to your Python directory: https://www.python-course.eu/neural_network_mnist.php
+	*This format (unlike the mnistALL.mat file) comes ready in the form of 784XN where N is the total number of either training or testing samples
+	*FLANN datasets are ROW MAJOR which means that each row represents each instance that we are trying to match
+	*Isolate first 10K training samples and first 1K testing samples
+	*The MNIST data in this csv format has the labels stored in the first column so we remove the first column from both testing and training sets and store them in:
+		-train_labels
+		-test_labels
+
+
+STEP 2: Call FLANN() function:
+	*flann.nn(train_data, test_data, K, algorithm="kmeans", branching=32, iterations=7, checks=16)
+	*The output of this function is called an index matrix and is a 2 dimensional matrix where the rows represent each test instance and the columns represent the nearest neighbor in (closest first) order from left to right.
+	
+STEP 3: Generate result/response for given test instance(s)
+	*Remember, this 2D index matrix that the FLANN function builds is just that: a matrix of indeces. So for example the first row for K=3 can be something like (12, 4555, 100) which simply means the first test instance is closest to the 12th training sample and then the 4555th training sample and then the 100th training sample. But what is the prediction?
+	*Here we can use numpy for very efficiently finding which label in train_labels matches which index in the 2D index matrix: train_labels[result[:,:]]
+	*Now we have a matrix of labels (instead of a matrix of indexes) with 1K rows corresponding to 1K test instances and K columns corresponding to the number of neighbors selected and we want to find out the most occuring label for each testing instance. This is where scipy comes in where the stats package allows for the calculation of modes accross an entire array in one call without the need to loop.
+	
+STEP 4: Compute Accuracy (# of correct predictions/# of total predictions)
+	*Step 3 leaves us with a 1K X 1 list of predicted labels (digits from 0 to 9) of the first 1K test images
+	*Remember, these are not necessarily the correct labels so we go back to the testing labels list (ytest) and find out how many times our prediction did not match the correct test label
+	*We achieve this by using the numpy.sum(ypred == test_labels) to find the total number of times/hits where the ith entry of ypred is equivalent to the ith entry of test_labels
+	*The total number of wrong predictions divided by the total number of predicitions is the Error Rate
+	*The total number of correct predcitions divided by the total number of predictions is the Model Accuracy
+
+
+#Results:
+	*K = 100;
+		Error Rate: 11.5%
+		Total Time: 1.77 seconds
+	*K = 150;
+		Error Rate: 12.79%
+		Total Time: 1.59 seconds
+	*K = 10;
+		Error Rate: 8.0%
+		Total Time: 1.59 seconds
+	*K = 5;
+		Error Rate: 1.7%
+		Total Time: 1.56 seconds
+		
+Note how the results for the FLANN algorithm are far more accurate than that of KNN given that unlike KNN, the accuracy of FLANN increases with increasing dimensionality.

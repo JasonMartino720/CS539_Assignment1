@@ -1,0 +1,73 @@
+OS: Ubuntu 20.04
+PL: MatLab R2020b
+
+Source Code: https://github.com/probml/pmtk3
+
+To Run: 
+	*Extract entire folder into MATLAB directory on your machine
+	*Open the mnistKNNdemo.m file from the demo folder
+	*Run
+
+##What is MNIST:
+	MNIST is a collection of 70K total images predefined into 60K training images and 10K testing images. The user is free to use some or all of the training images to build their model and they can use some or all of the testing data to test their model. Here we use the first 10K training images and the first 1K testing images. Each image consists of a 28x28 matrix with each cell containing the value of the corresponding pixel (0-255). In higher level ML applications such as convolutional nets, the data can be left in the 28x28 format with a corresponding label list. However, for the sake of a nearest neighbor algorithm, the 28x28 matrices need to be "flattened" or reshaped into a 1x784 vector so that the "distance" between twoe instances can be easily calculated using something like a eucledian measure.
+
+##What is KNN:
+
+	A simple algorithm that stores ALL available cases (training instances) and classifies new cases (testing instances) based on a similarity measure. This similarity is defined by how close (Eucledian/Manhattan distance) the new/test instance to the nearest K (user defined) training instances. The larger the K, the further the algorithm will search from the test instance for more neighbors until K nearest neighbors are found. The most recurring class/output of all the K nearest neighbors is the algorithm's classification of that given test instance. Note that KNN is a "lazy" algorithm in that all the learning is done in one go, before runtime/testing.
+
+##Overall Process and Corresponding Functions:
+
+STEP 1: Load data and define test/training split
+	*LoadData('mnistAll')* function call loads the mnistALL folder containing the following items:
+		-mnistAll.mat which contains all the raw data (all images, labels, etc.) from Yann Lecunn Website
+		-mnistMakeAll.m which builds an 'mnist' structure with 4 objects defined by the mnistRead.m subfunction:
+			-train_images which is a 28X28X60K 3D matrix (pixels X pixelsX # of training images)
+			-test_images which is a 28X28X10K 3D matrix (pixels X pixelsX # of testing images)
+			-train_labels which is a 60K X 1 list (60K training image labels)
+			-test_labels which is a 10K X 1 list (10K testing image labels)
+		-mnistSplit.n which is loaded with the folder in order to separate test and train data from their combined state in the mnistAll.mat file
+	*So far, we have separated the data into test and train but we are yet to reshape the data in order to work with our classification function. For that, we use built in reshape function to "flatten" the 28x28X60K arrays into lists of 60K X 784 with each row corresponding to a single image. Note that we are only using the first 10K training images and first 1K test images so our data is now in the form:
+		-Xtrain which is a 10K X 784 matrix of doubles (flat representation of 10K training images)
+		-Ytrain which is a 10K X 1 list of labels
+		-Xtest which is a 10K X 784 matrix of doubles (flat representation of 10K testing images)
+		-Ytest which is a 10K X 1 list of labels
+
+STEP 2: Calculate distance (similarity measure)
+	*We can use any form of distance measure as long as we keep it consisitent. Here, a square distance measure is calculated by:
+		-Finding difference between INDIVIDUAL ROWS of Xtrain and Xtest (each difference will be a 1X784 vector)
+		-Taking the magintude of each row (magnitude of each difference vector)
+		-Squaring the result
+		-We do this for each test instance, finding its distance from all training instances and then going on to the next test instance and so on
+		-We end up with a 10K X 1 list for every single test sample with each row corresponding to that test instance distance from each of the 10K training images
+		-Put those together and we have a 10K X 1K array showing all the distances from each of the 1K test instances to each of the 10K training instances
+		
+STEP 3: Find and store nearest neighbors until K neighbors are found
+	*Now that we have an array of distances, we need to sort it in order of smallest distance first 
+	*If we sort this distance arrawy we completely loose track of which distance corresponds to which training sample so instead we create another array that stores the permutation value at which the array is sorted 
+	*This way we have a new array that lists the index (how close of a neighbor) a given distance measure is without altering the original order of the array
+	*We can use this new index measure to find the corresponding labels of the K nearest samples/indeces
+	
+STEP 4: Generate result/response for given test instance(s)
+	*With the distances measured and their indexes sorted and matched with the training labels, we can now finally start making assumptions based on the user defined K (how many nearest neighbors to consider)
+	*We need some way to keep count of all the labels in the K neighbors in order to identify which one occurs the most. For this we use built in MatLab function histcounts() which builds a histogram of all labels. The label that occurs the most is the algorithms prediction for the given test instance.
+	
+STEP 5: Compute Accuracy (# of correct predictions/# of total predictions)
+	*Step 4 leaves us with a 1K X 1 list of predicted labels (digits from 0 to 9) of the first 1K test images
+	*Remember, these are not necessarily the correct labels so we go back to the testing labels list (ytest) and find out how many times our prediction did not match the correct test label
+	*The total number of wrong predictions divided by the total number of predicitions is the Error Rate
+	*The total number of correct predcitions divided by the total number of predictions is the Model Accuracy
+	
+
+Results:
+	*K = 100;
+		Error Rate: 21.40%
+		Total Time: 0.24 seconds
+	*K = 150;
+		Error Rate: 23.00%
+		Total Time: 0.23 seconds
+	*K = 10;
+		Error Rate: 16.20%
+		Total Time: 0.24 seconds
+	*K = 5;
+		Error Rate: 16.50%
+		Total Time: 0.23 seconds
